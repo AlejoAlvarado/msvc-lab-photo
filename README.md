@@ -1,0 +1,1 @@
+# msvc-lab-photo
