@@ -1,0 +1,153 @@
+{
+	"info": {
+		"_postman_id": "da2ad9dd-4b32-4739-8f78-384f32afa29d",
+		"name": "App photo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7560309"
+	},
+	"item": [
+		{
+			"name": "msvc-lab-photo",
+			"item": [
+				{
+					"name": "findAll",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/photos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"photos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/room/657cc01be5262f48fcecb5b3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"room",
+								"657cc01be5262f48fcecb5b3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll id Copy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/photos/hotel/main/def",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"photos",
+								"hotel",
+								"main",
+								"def"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "save",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"roomNumber\": 1,\r\n    \"description\": \"casa2\",\r\n    \"floor\": 2,\r\n    \"maxGuest\": 5,\r\n    \"roomType\": {\r\n        \"id\": \"657cc01be5262f48fcecb5b1\",\r\n        \"name\": \"vip\"\r\n    },\r\n    \"hotelId\": \"657cc01be5262f48fcecb5b3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/room",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"room"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update photo",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\r\n        \"roomNumber\": 112,\r\n        \"description\": \"casa21\",\r\n        \"floor\": 21,\r\n        \"maxGuest\": 51,\r\n        \"roomType\": {\r\n            \"id\": \"657cc01be5262f48fcecb5b12\",\r\n            \"name\": \"vip2\"\r\n        },\r\n        \"hotelId\": \"657cc01be5262f48fcecb5b32\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/room/657d11cc5b8d1b4c92b2c8f3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"room",
+								"657d11cc5b8d1b4c92b2c8f3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/photos/657d0a26e5b19576f1372961",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"photos",
+								"657d0a26e5b19576f1372961"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

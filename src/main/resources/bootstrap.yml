@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: msvc-lab-photo
+  config:
+    name: ${spring.application.name}
+  cloud:
+    config:
+      uri: http://localhost:8888
+  data:
+    mongodb:
+      uri: mongodb://localhost:27020/photoDb
+
+server:
+  port: 8083
