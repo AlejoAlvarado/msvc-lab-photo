@@ -10,8 +10,8 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface PhotoRepository extends ReactiveMongoRepository<Photo,String> {
-    Flux<Photo> findByHotelId(@Param("hotelid")String hotelId);
-    Flux<Photo> findByRoomId(@Param("roomid")String roomId);
-    @Query("{and :[{hoteid: ?0},{flagmain: true}]}")
-    Mono<Photo> findHotelMainPhoto(String hotelId);
+    Flux<Photo> findByHotelId(@Param("hotelId")String hotelId);
+    Flux<Photo> findByRoomId(@Param("roomId")String roomId);
+    @Query("{hotelId: ?0, flagMain: true}")
+    Flux<Photo> findHotelMainPhoto(String hotelId);
 }

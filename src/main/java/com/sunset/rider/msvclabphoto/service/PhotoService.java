@@ -13,7 +13,7 @@ public interface PhotoService {
 
     Flux<Photo> findByHotelId(String hotelId);
 
-    Mono<Photo> findHotelMainPhoto(String hotelId);
+    Flux<Photo> findHotelMainPhoto(String hotelId);
 
     Mono<Photo> save(Photo photo);
 

@@ -36,7 +36,7 @@ public class PhotoServiceImpl implements PhotoService {
   }
 
   @Override
-  public Mono<Photo> findHotelMainPhoto(String hotelId) {
+  public Flux<Photo> findHotelMainPhoto(String hotelId) {
     return photoRepository.findHotelMainPhoto(hotelId);
   }
 
