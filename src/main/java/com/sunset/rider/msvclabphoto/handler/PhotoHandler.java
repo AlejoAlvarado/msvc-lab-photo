@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
@@ -96,17 +97,30 @@ public class PhotoHandler {
 
                 return ServerResponse.badRequest().body(BodyInserters.fromValue(erroresMap));
               } else {
+                ServerResponse serverResponse = null;
                 if (Boolean.TRUE == rq.getFlagMain()) {
-                  List<Photo> mainPhotos =
-                      photoService
-                          .findAll()
-                          .toStream()
-                          .filter(Photo::getFlagMain)//Modificar para que haga lo mismo pero sin bloquear
-                          .toList();
-                  if(!mainPhotos.isEmpty()){
-                      ServerResponse.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                              .body(BodyInserters.fromValue(ErrorGeneric.error("Ya existe una foto principal para este hotel")));
-                  }
+
+                  Mono<List<Photo>> hotelMainPhotos =
+                      photoService.findHotelMainPhoto(rq.getHotelId()).collectList();
+                  hotelMainPhotos.flatMap(
+                      l -> {
+                        System.out.println("l has: "+l.size());
+                        if (!l.isEmpty()) {
+                          return ServerResponse.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                              .body(
+                                  BodyInserters.fromValue(
+                                      ErrorGeneric.error(
+                                          "Ya existe una foto principal para este hotel")));
+                        }
+                        return photoService
+                            .save(buildGuest(rq, null, null))
+                            .flatMap(
+                                photo ->
+                                    ServerResponse.created(
+                                            URI.create("/photo/".concat(photo.getId())))
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .body(BodyInserters.fromValue(photo)));
+                      });
                 }
                 return photoService
                     .save(buildGuest(rq, null, null))
