@@ -34,15 +34,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/room/657cc01be5262f48fcecb5b3",
+							"raw": "http://localhost:8080/photos/65cfda19168c094c502f847d",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
+							"port": "8080",
 							"path": [
-								"room",
-								"657cc01be5262f48fcecb5b3"
+								"photos",
+								"65cfda19168c094c502f847d"
 							]
 						}
 					},
@@ -54,7 +54,49 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/photos/hotel/main/def",
+							"raw": "http://localhost:8080/photos/room/def",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"photos",
+								"room",
+								"def"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll id Copy 2",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/photos/hotel/abc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"photos",
+								"hotel",
+								"abc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll id Copy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/photos/hotel/main/abc",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -64,7 +106,37 @@
 								"photos",
 								"hotel",
 								"main",
-								"def"
+								"abc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "findAll id Copy 2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"hotelIds\": [\r\n        \"abc\",\r\n        \"fdg\",\r\n        \"hij\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/photos/hotel/main",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"photos",
+								"hotel",
+								"main"
 							]
 						}
 					},
@@ -77,7 +149,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"roomNumber\": 1,\r\n    \"description\": \"casa2\",\r\n    \"floor\": 2,\r\n    \"maxGuest\": 5,\r\n    \"roomType\": {\r\n        \"id\": \"657cc01be5262f48fcecb5b1\",\r\n        \"name\": \"vip\"\r\n    },\r\n    \"hotelId\": \"657cc01be5262f48fcecb5b3\"\r\n}",
+							"raw": "{\r\n    \"hotelId\": \"hij\",\r\n    \"roomId\": \"def\",\r\n    \"base64\": \"sfsdfs\",\r\n    \"description\": \"abcd\",\r\n    \"flagMain\": true\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -85,14 +157,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/room",
+							"raw": "http://localhost:8080/photos",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
+							"port": "8080",
 							"path": [
-								"room"
+								"photos"
 							]
 						}
 					},
@@ -105,7 +177,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "    {\r\n        \"roomNumber\": 112,\r\n        \"description\": \"casa21\",\r\n        \"floor\": 21,\r\n        \"maxGuest\": 51,\r\n        \"roomType\": {\r\n            \"id\": \"657cc01be5262f48fcecb5b12\",\r\n            \"name\": \"vip2\"\r\n        },\r\n        \"hotelId\": \"657cc01be5262f48fcecb5b32\"\r\n    }",
+							"raw": "{\r\n    \"hotelId\": \"abc\",\r\n    \"roomId\": \"def\",\r\n    \"base64\": \"sdasdsdf\",\r\n    \"description\": \"efgh\",\r\n    \"flagMain\": false\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -113,15 +185,15 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/room/657d11cc5b8d1b4c92b2c8f3",
+							"raw": "http://localhost:8080/photos/65cfda19168c094c502f847d",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8081",
+							"port": "8080",
 							"path": [
-								"room",
-								"657d11cc5b8d1b4c92b2c8f3"
+								"photos",
+								"65cfda19168c094c502f847d"
 							]
 						}
 					},
