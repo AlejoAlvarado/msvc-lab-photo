@@ -1,6 +1,7 @@
 package com.sunset.rider.msvclabphoto.handler;
 
 import com.sunset.rider.msvclabphoto.model.Photo;
+import com.sunset.rider.msvclabphoto.model.request.MainPhotosRequest;
 import com.sunset.rider.msvclabphoto.model.request.PhotoRequest;
 import com.sunset.rider.msvclabphoto.service.PhotoService;
 import com.sunset.rider.msvclabphoto.utils.ErrorGeneric;
@@ -16,13 +17,11 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class PhotoHandler {
@@ -79,10 +78,36 @@ public class PhotoHandler {
         .body(photoService.findHotelMainPhoto(hotelId), Photo.class);
   }
 
-  public Mono<ServerResponse> save(ServerRequest request) {
-    Mono<PhotoRequest> guestRequest = request.bodyToMono(PhotoRequest.class);
+  public Mono<ServerResponse> findHotelListMainPhotos(ServerRequest serverRequest) {
+    Mono<MainPhotosRequest> mainPhotosRequestMono =
+        serverRequest.bodyToMono(MainPhotosRequest.class);
+    return mainPhotosRequestMono.flatMap(
+        rq -> {
+          Errors errors = new BeanPropertyBindingResult(rq, PhotoRequest.class.getName());
+          validator.validate(rq, errors);
 
-    return guestRequest
+          if (errors.hasErrors()) {
+            Map<String, Object> erroresMap = new HashMap<>();
+            List<String> errorList = new ArrayList<>();
+            errors.getFieldErrors().forEach(e -> errorList.add(e.getDefaultMessage()));
+            erroresMap.put("errores", errorList);
+            erroresMap.put("timestamp", LocalDateTime.now());
+
+            return ServerResponse.badRequest().body(BodyInserters.fromValue(erroresMap));
+          } else {
+            return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(
+                    photoService.findHotelListMainPhotos(rq.getHotelIds().toArray(new String[0])),
+                    Photo.class);
+          }
+        });
+  }
+
+  public Mono<ServerResponse> save(ServerRequest request) {
+    Mono<PhotoRequest> photoRequest = request.bodyToMono(PhotoRequest.class);
+
+    return photoRequest
         .flatMap(
             rq -> {
               Errors errors = new BeanPropertyBindingResult(rq, PhotoRequest.class.getName());
@@ -99,7 +124,7 @@ public class PhotoHandler {
               } else {
                 Mono<ServerResponse> serverResponseMono =
                     photoService
-                        .save(buildGuest(rq, null, null))
+                        .save(buildPhoto(rq, null, null))
                         .flatMap(
                             photo ->
                                 ServerResponse.created(URI.create("/photo/".concat(photo.getId())))
@@ -120,7 +145,7 @@ public class PhotoHandler {
                                               "Ya existe una foto principal para este hotel")));
                             }
                             return photoService
-                                .save(buildGuest(rq, null, null))
+                                .save(buildPhoto(rq, null, null))
                                 .flatMap(
                                     photo ->
                                         ServerResponse.created(
@@ -142,15 +167,15 @@ public class PhotoHandler {
 
   public Mono<ServerResponse> update(ServerRequest serverRequest) {
     String id = serverRequest.pathVariable("id");
-    Mono<PhotoRequest> guestRequestMono = serverRequest.bodyToMono(PhotoRequest.class);
+    Mono<PhotoRequest> photoRequestMono = serverRequest.bodyToMono(PhotoRequest.class);
 
     return photoService
         .findById(id)
         .flatMap(
             photo -> {
               Errors errors =
-                  new BeanPropertyBindingResult(guestRequestMono, PhotoRequest.class.getName());
-              validator.validate(guestRequestMono, errors);
+                  new BeanPropertyBindingResult(photoRequestMono, PhotoRequest.class.getName());
+              validator.validate(photoRequestMono, errors);
 
               if (errors.hasErrors()) {
                 Map<String, Object> erroresMap = new HashMap<>();
@@ -160,8 +185,8 @@ public class PhotoHandler {
 
                 return ServerResponse.badRequest().body(BodyInserters.fromValue(erroresMap));
               } else {
-                return guestRequestMono
-                    .flatMap(rq -> photoService.update(buildGuest(rq, id, photo)))
+                return photoRequestMono
+                    .flatMap(rq -> photoService.update(buildPhoto(rq, id, photo)))
                     .flatMap(
                         roomDb ->
                             ServerResponse.created(URI.create("/photo/".concat(roomDb.getId())))
@@ -186,7 +211,7 @@ public class PhotoHandler {
     return photoService.delete(id).then(ServerResponse.noContent().build());
   }
 
-  public Photo buildGuest(PhotoRequest photoRequest, String id, Photo photo) {
+  public Photo buildPhoto(PhotoRequest photoRequest, String id, Photo photo) {
 
     return Photo.builder()
         .id(StringUtils.isEmpty(id) ? null : id)

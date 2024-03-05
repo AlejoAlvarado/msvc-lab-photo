@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 public class PhotoServiceImpl implements PhotoService {
 
@@ -38,6 +40,11 @@ public class PhotoServiceImpl implements PhotoService {
   @Override
   public Flux<Photo> findHotelMainPhoto(String hotelId) {
     return photoRepository.findHotelMainPhoto(hotelId);
+  }
+
+  @Override
+  public Flux<Photo> findHotelListMainPhotos(String[] hotelIds) {
+    return photoRepository.findHotelListMainPhotos(hotelIds);
   }
 
   @Override

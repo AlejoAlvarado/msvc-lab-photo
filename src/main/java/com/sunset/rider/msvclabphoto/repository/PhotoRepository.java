@@ -8,10 +8,14 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Repository
 public interface PhotoRepository extends ReactiveMongoRepository<Photo,String> {
     Flux<Photo> findByHotelId(@Param("hotelId")String hotelId);
     Flux<Photo> findByRoomId(@Param("roomId")String roomId);
     @Query("{hotelId: ?0, flagMain: true}")
     Flux<Photo> findHotelMainPhoto(String hotelId);
+    @Query("{hotelId: { $in: ?0 }, flagMain: true}")
+    Flux<Photo> findHotelListMainPhotos(String[] hotelIds);
 }

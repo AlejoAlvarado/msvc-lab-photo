@@ -16,6 +16,7 @@ public class RouterConfig {
         .andRoute(RequestPredicates.GET("/photos/{id}"), photoHandler::findById)
         .andRoute(RequestPredicates.GET("/photos/room/{roomId}"), photoHandler::findByRoomId)
         .andRoute(RequestPredicates.GET("/photos/hotel/{hotelId}"), photoHandler::findByHotelId)
+        .andRoute(RequestPredicates.POST("/photos/hotel/main"), photoHandler::findHotelListMainPhotos)
         .andRoute(
             RequestPredicates.GET("/photos/hotel/main/{hotelId}"), photoHandler::findHotelMainPhoto)
         .andRoute(RequestPredicates.POST("/photos"), photoHandler::save)
