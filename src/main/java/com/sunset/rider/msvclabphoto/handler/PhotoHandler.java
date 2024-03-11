@@ -215,7 +215,7 @@ public class PhotoHandler {
 
     return Photo.builder()
         .id(StringUtils.isEmpty(id) ? null : id)
-        .base64(photoRequest.getBase64())
+        .url(photoRequest.getBase64())
         .hotelId(photoRequest.getHotelId())
         .roomId(photoRequest.getRoomId())
         .flagMain(photoRequest.getFlagMain())

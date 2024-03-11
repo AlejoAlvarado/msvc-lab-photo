@@ -6,9 +6,39 @@ spring:
   cloud:
     config:
       uri: http://localhost:8888
+    azure:
+      storage:
+        blob:
+          container-name: hotel
   data:
     mongodb:
-      uri: mongodb://localhost:27020/photoDb
-
+      uri: mongodb+srv://hotel:hotel@hotelapp.jlcomsq.mongodb.net/?retryWrites=true&w=majority&appName=hotelApp
+      database: photoDb
+  servlet:
+    multipart:
+      max-file-size: 6MB
+      max-request-size: 6MB
+  webflux:
+    io:
+      buffer-size: 256KB
 server:
   port: 8083
+
+azure:
+  blob-storage:
+    connection-string: BlobEndpoint=https://hotelsapp.blob.core.windows.net/;QueueEndpoint=https://hotelsapp.queue.core.windows.net/;FileEndpoint=https://hotelsapp.file.core.windows.net/;TableEndpoint=https://hotelsapp.table.core.windows.net/;SharedAccessSignature=sv=2022-11-02&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2024-03-30T22:19:18Z&st=2024-03-08T14:19:18Z&spr=https&sig=1mCT06L%2FlBKAhx50n%2Ff2GfTrgXUNS2s%2BazDMeUApdrM%3D
+
+logging:
+  pattern:
+    console: "%d{'yyyy-MM-dd HH:mm:ss,SSS',America/Mexico_City} %clr(%-5level) (%cyan(%logger{15}) [%X{headers}] : %msg %n"
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              ReactiveMongoTemplate: DEBUG
+    com:
+      sunset:
+        rider:
+            msvclabphoto: DEBUG
