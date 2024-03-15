@@ -17,7 +17,7 @@ public class PhotoRequest {
     private String hotelId;
     private String roomId;
     @NotEmpty(message = "base64 no puede ser nulo")
-    private String base64;
+    private String url;
     private String description;
     @NotNull(message = "flagMain no puede ser nulo")
     private Boolean flagMain;

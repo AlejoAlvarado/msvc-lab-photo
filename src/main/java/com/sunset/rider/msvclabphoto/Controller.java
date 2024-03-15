@@ -3,7 +3,7 @@ package com.sunset.rider.msvclabphoto;
 
 import com.sunset.rider.msvclabphoto.model.Photo;
 import com.sunset.rider.msvclabphoto.service.BlobService;
-import com.sunset.rider.msvclabphoto.utils.Form;
+import com.sunset.rider.msvclabphoto.model.dto.Form;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,9 +28,7 @@ public class Controller {
         try {
 
             return
-                    blobService.uploadImageWithCaption(file,form).map(mono -> {
-                        return ResponseEntity.ok().body(mono);
-                    });
+                    blobService.uploadImageWithCaption(file,form).map(mono -> ResponseEntity.ok().body(mono));
 
 
         } catch (IOException e) {

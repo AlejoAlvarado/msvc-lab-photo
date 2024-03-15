@@ -7,7 +7,7 @@ import com.azure.storage.blob.models.BlobHttpHeaders;
 import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.sunset.rider.msvclabphoto.model.Photo;
 import com.sunset.rider.msvclabphoto.repository.PhotoRepository;
-import com.sunset.rider.msvclabphoto.utils.Form;
+import com.sunset.rider.msvclabphoto.model.dto.Form;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
 public class BlobService {
 
     @Autowired
-    private PhotoRepository photoRepository;
+    private PhotoService photoRepository;
 
     @Value("${spring.cloud.azure.storage.blob.container-name}")
     private String containerName;
@@ -40,18 +40,6 @@ public class BlobService {
     @PostConstruct
     public void init() {
         blobServiceClient = new BlobServiceClientBuilder().connectionString(connectionString).buildAsyncClient();
-    }
-
-    public Mono<Photo> save(Photo photo) {
-        return photoRepository.save(photo);
-    }
-
-    public Flux<Photo> findAll() {
-        return photoRepository.findAll();
-    }
-
-    public Mono<Photo> findById(String id) {
-        return photoRepository.findById(id);
     }
 
     /**
@@ -110,7 +98,7 @@ public class BlobService {
                             .roomId(form.getRoomId())
                             .url(url)
                             .flagMain(form.isFlagMain()).build();
-                    return photoRepository.save(data);
+                    return Mono.just(data);
                 }));
 
 
