@@ -59,6 +59,16 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sunset.rider.lab</groupId>
+            <artifactId>exception-sunset-rider</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.azure/azure-storage-blob -->
         <dependency>
             <groupId>com.azure</groupId>

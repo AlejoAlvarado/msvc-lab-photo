@@ -25,7 +25,6 @@ public class RouterConfig {
             RequestPredicates.POST("/photos")
                 .and(RequestPredicates.accept(MediaType.valueOf(MediaType.MULTIPART_FORM_DATA_VALUE))),
             photoHandler::save)
-        .andRoute(RequestPredicates.PUT("/photos/{id}"), photoHandler::update)
         .andRoute(RequestPredicates.DELETE("/photos/{id}"), photoHandler::delete);
   }
 }

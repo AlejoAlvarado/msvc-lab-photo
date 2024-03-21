@@ -21,7 +21,5 @@ public interface PhotoService {
 
     Mono<Photo> save(Photo photo);
 
-    Mono<Photo> update(Photo photo);
-
     Mono<Void> delete(String id);
 }

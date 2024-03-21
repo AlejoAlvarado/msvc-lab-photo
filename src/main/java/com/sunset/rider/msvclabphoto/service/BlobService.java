@@ -1,9 +1,11 @@
 package com.sunset.rider.msvclabphoto.service;
 
+import com.azure.core.util.Context;
 import com.azure.storage.blob.BlobAsyncClient;
 import com.azure.storage.blob.BlobServiceAsyncClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobHttpHeaders;
+import com.azure.storage.blob.models.DeleteSnapshotsOptionType;
 import com.azure.storage.blob.models.ParallelTransferOptions;
 import com.sunset.rider.msvclabphoto.model.Photo;
 import com.sunset.rider.msvclabphoto.repository.PhotoRepository;
@@ -72,7 +74,7 @@ public class BlobService {
         return Mono.from(imageFile.map(filePart ->
                         {
                             BlobHttpHeaders headers = new BlobHttpHeaders().setContentType(MediaType.IMAGE_JPEG_VALUE);
-                            String blobFileName = filePart.filename();
+                            String blobFileName = "-."+filePart.filename() + form.getHotelId();
                             BlobAsyncClient blobClient = blobServiceClient.getBlobContainerAsyncClient(containerName)
                                     .getBlobAsyncClient(blobFileName);
 
@@ -97,10 +99,16 @@ public class BlobService {
                     Photo data = Photo.builder().hotelId(form.getHotelId())
                             .roomId(form.getRoomId())
                             .url(url)
-                            .flagMain(form.isFlagMain()).build();
+                            .flagMain(Boolean.valueOf(form.getFlagMain())).build();
                     return Mono.just(data);
                 }));
 
 
+    }
+
+    public void deleteImageWithCaption(String blobFileName){
+        BlobAsyncClient blobClient = blobServiceClient.getBlobContainerAsyncClient(containerName)
+                .getBlobAsyncClient(blobFileName);
+        blobClient.deleteIfExistsWithResponse(DeleteSnapshotsOptionType.INCLUDE, null);
     }
 }

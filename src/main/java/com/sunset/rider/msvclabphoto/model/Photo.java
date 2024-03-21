@@ -1,5 +1,6 @@
 package com.sunset.rider.msvclabphoto.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,6 +21,8 @@ public class Photo {
     private String hotelId;
     private String roomId;
     private String url;
+    @JsonIgnore
+    private String filename;
     private String description;
     private Boolean flagMain;
     @DateTimeFormat(pattern = "yyyy-MM-dd")

@@ -1,5 +1,6 @@
 package com.sunset.rider.msvclabphoto.handler;
 
+import com.sunset.rider.lab.exceptions.exception.NotFoundException;
 import com.sunset.rider.msvclabphoto.model.Photo;
 import com.sunset.rider.msvclabphoto.model.dto.Form;
 import com.sunset.rider.msvclabphoto.model.request.MainPhotosRequest;
@@ -13,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.http.codec.multipart.FormFieldPart;
 import org.springframework.stereotype.Component;
@@ -27,6 +27,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -116,43 +117,18 @@ public class PhotoHandler {
   }
 
   public Mono<ServerResponse> save(ServerRequest request) {
-
-    //    Flux<FilePart> fluxFile =
-    //        monoParts.flatMapMany(
-    //            map -> {
-    //              log.info("file flux");
-    //              FilePart filePart = (FilePart) map.get("file");
-    //              return Flux.just(filePart);
-    //            });
-    //    fluxFile.subscribe();
-    //    Mono<ResponseEntity<Photo>> form=monoParts.flatMap(
-    //        map -> {
-    //          log.info("form mono");
-    //          String hotelId = map.getFirst("hotelId");
-    //          String roomId = map.getFirst("roomId");
-    //          Boolean flagMain = Boolean.valueOf("flagMain");
-    //
-    //            try {
-    //                return blobService
-    //                    .uploadImageWithCaption(fluxFile, Form.builder()
-    //                            .flagMain(flagMain)
-    //                            .hotelId(hotelId)
-    //                            .roomId(roomId).build())
-    //                    .map(mono -> ResponseEntity.ok().body(mono));
-    //            } catch (IOException e) {
-    //                throw new RuntimeException(e);
-    //            }
-    //        });
-
-    Mono<Photo> monoPhoto = uploadImageWithCaption(request);
-
-    return monoPhoto
+    Flux<FilePart> fluxFile = getFileFromMultipart(request);
+    Mono<Form> form = getFormFromMultipart(request);
+    return fluxFile
+        .zipWith(form)
         .flatMap(
             photoForm -> {
-              PhotoRequest photoRequest = serializePhotoToPhotoRequest(photoForm);
+              PhotoRequest photoRequest = serializeFormToPhotoRequest(photoForm.getT2());
+              photoRequest.setFile(Flux.just(photoForm.getT1()));
+              Mono<ServerResponse> serverResponseMono;
               Errors errors =
                   new BeanPropertyBindingResult(photoRequest, PhotoRequest.class.getName());
-              validator.validate(photoForm, errors);
+              validator.validate(photoRequest, errors);
 
               if (errors.hasErrors()) {
                 Map<String, Object> erroresMap = new HashMap<>();
@@ -163,18 +139,9 @@ public class PhotoHandler {
 
                 return ServerResponse.badRequest().body(BodyInserters.fromValue(erroresMap));
               } else {
-                Mono<ServerResponse> serverResponseMono =
-                    photoService
-                        .save(buildPhoto(photoRequest, null, null))
-                        .flatMap(
-                            photo ->
-                                ServerResponse.created(URI.create("/photo/".concat(photo.getId())))
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .body(BodyInserters.fromValue(photo)));
-                if (Boolean.TRUE == photoForm.getFlagMain()) {
-
+                if (Boolean.TRUE == photoRequest.getFlagMain()) {
                   Mono<List<Photo>> hotelMainPhotos =
-                      photoService.findHotelMainPhoto(photoForm.getHotelId()).collectList();
+                      photoService.findHotelMainPhoto(photoForm.getT2().getHotelId()).collectList();
                   serverResponseMono =
                       hotelMainPhotos.flatMap(
                           l -> {
@@ -185,49 +152,88 @@ public class PhotoHandler {
                                           ErrorGeneric.error(
                                               "Ya existe una foto principal para este hotel")));
                             }
-                            return photoService
-                                .save(buildPhoto(photoRequest, null, null))
-                                .flatMap(
-                                    photo ->
-                                        ServerResponse.created(
-                                                URI.create("/photo/".concat(photo.getId())))
-                                            .contentType(MediaType.APPLICATION_JSON)
-                                            .body(BodyInserters.fromValue(photo)));
+                            return savePhoto(photoRequest, photoForm.getT2(), null, null);
                           });
+                } else {
+                  serverResponseMono = savePhoto(photoRequest, photoForm.getT2(), null, null);
                 }
+
                 return serverResponseMono;
               }
             })
-        .onErrorResume(
-            error -> {
-              WebClientResponseException errorResponse = (WebClientResponseException) error;
+        .switchIfEmpty(
+            ServerResponse.status(HttpStatus.NOT_FOUND)
+                .body(BodyInserters.fromValue(ErrorNotFound.error("Error"))))
+        .next();
+  }
 
-              return Mono.error(errorResponse);
+  private Mono<ServerResponse> savePhoto(
+      PhotoRequest photoRequest, Form form, String id, Photo galleryPhoto) {
+    Mono<Photo> photoMono = uploadImageWithCaption(photoRequest.getFile(), form);
+    return photoMono.flatMap(
+        photo -> {
+          photoRequest.setUrl(photo.getUrl());
+          Mono<ServerResponse> response =
+              photoService
+                  .save(buildPhoto(photoRequest, id, galleryPhoto))
+                  .flatMap(
+                      savePhoto ->
+                          ServerResponse.created(URI.create("/photo/".concat(savePhoto.getId())))
+                              .contentType(MediaType.APPLICATION_JSON)
+                              .body(BodyInserters.fromValue(savePhoto)));
+          return response;
+        });
+  }
+
+  private Flux<FilePart> getFileFromMultipart(ServerRequest request) {
+    return request
+        .multipartData()
+        .flatMapMany(
+            multipart -> {
+              FilePart part = (FilePart) multipart.toSingleValueMap().get("file");
+              if (part == null) {
+                return Flux.empty();
+              }
+              return Flux.just(part);
             });
   }
 
-  public Mono<Photo> uploadImageWithCaption(ServerRequest request) {
+  private Mono<Form> getFormFromMultipart(ServerRequest request) {
     return request
         .multipartData()
         .flatMap(
             multipart -> {
-              FilePart part = (FilePart) multipart.toSingleValueMap().get("file");
-              String roomId = ((FormFieldPart) multipart.toSingleValueMap().get("roomId")).value();
+              String roomId =
+                  multipart.toSingleValueMap().get("roomId") != null
+                      ? ((FormFieldPart) multipart.toSingleValueMap().get("roomId")).value()
+                      : "";
               String hotelId =
-                  ((FormFieldPart) multipart.toSingleValueMap().get("hotelId")).value();
+                  multipart.toSingleValueMap().get("hotelId") != null
+                      ? ((FormFieldPart) multipart.toSingleValueMap().get("hotelId")).value()
+                      : "";
               String flagMain =
-                  ((FormFieldPart) multipart.toSingleValueMap().get("flagMain")).value();
+                  multipart.toSingleValueMap().get("flagMain") != null
+                      ? ((FormFieldPart) multipart.toSingleValueMap().get("flagMain")).value()
+                      : "";
               String description =
-                  ((FormFieldPart) multipart.toSingleValueMap().get("description")).value();
-              boolean isMain = Boolean.parseBoolean(flagMain);
-              Flux<FilePart> file = Flux.just(part);
+                  multipart.toSingleValueMap().get("description") != null
+                      ? ((FormFieldPart) multipart.toSingleValueMap().get("description")).value()
+                      : "";
               Form form =
                   Form.builder()
                       .roomId(roomId)
                       .hotelId(hotelId)
-                      .flagMain(isMain)
+                      .flagMain(flagMain)
                       .description(description)
                       .build();
+              return Mono.just(form);
+            });
+  }
+
+  private Mono<Photo> uploadImageWithCaption(Flux<FilePart> file, Form form) {
+    return Mono.just(form)
+        .flatMap(
+            photoForm -> {
               try {
                 return blobService.uploadImageWithCaption(file, form);
               } catch (IOException e) {
@@ -236,50 +242,25 @@ public class PhotoHandler {
             });
   }
 
-  public Mono<ServerResponse> update(ServerRequest serverRequest) {
+  public Mono<ServerResponse> delete(ServerRequest serverRequest) {
     String id = serverRequest.pathVariable("id");
-    Mono<PhotoRequest> photoRequestMono = serverRequest.bodyToMono(PhotoRequest.class);
-
     return photoService
         .findById(id)
         .flatMap(
             photo -> {
-              Errors errors =
-                  new BeanPropertyBindingResult(photoRequestMono, PhotoRequest.class.getName());
-              validator.validate(photoRequestMono, errors);
-
-              if (errors.hasErrors()) {
-                Map<String, Object> erroresMap = new HashMap<>();
-                List<String> errorList = new ArrayList<>();
-                errors.getFieldErrors().forEach(e -> errorList.add(e.getDefaultMessage()));
-                erroresMap.put("errores", errorList);
-
-                return ServerResponse.badRequest().body(BodyInserters.fromValue(erroresMap));
-              } else {
-                return photoRequestMono
-                    .flatMap(rq -> photoService.update(buildPhoto(rq, id, photo)))
-                    .flatMap(
-                        roomDb ->
-                            ServerResponse.created(URI.create("/photo/".concat(roomDb.getId())))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(BodyInserters.fromValue(roomDb)));
+              String[] fileNameParts = photo.getUrl().split("-.");
+              String filename = "";
+              if (fileNameParts.length > 2) {
+                Arrays.stream(Arrays.copyOfRange(fileNameParts, 1, fileNameParts.length - 1))
+                    .forEach(filename::concat);
               }
+              filename = "-."+fileNameParts[1];
+              blobService.deleteImageWithCaption(filename);
+              return photoService.delete(id).then(ServerResponse.noContent().build());
             })
         .switchIfEmpty(
             ServerResponse.status(HttpStatus.NOT_FOUND)
-                .body(BodyInserters.fromValue(ErrorNotFound.error(id))))
-        .onErrorResume(
-            error -> {
-              WebClientResponseException errorResponse = (WebClientResponseException) error;
-
-              return Mono.error(errorResponse);
-            });
-  }
-
-  public Mono<ServerResponse> delete(ServerRequest serverRequest) {
-    String id = serverRequest.pathVariable("id");
-
-    return photoService.delete(id).then(ServerResponse.noContent().build());
+                .body(BodyInserters.fromValue(ErrorNotFound.error(id))));
   }
 
   public Photo buildPhoto(PhotoRequest photoRequest, String id, Photo photo) {
@@ -296,13 +277,12 @@ public class PhotoHandler {
         .build();
   }
 
-  public PhotoRequest serializePhotoToPhotoRequest(Photo photo) {
+  public PhotoRequest serializeFormToPhotoRequest(Form form) {
     return PhotoRequest.builder()
-        .url(photo.getUrl())
-        .hotelId(photo.getHotelId())
-        .roomId(photo.getRoomId())
-        .flagMain(photo.getFlagMain())
-        .description(photo.getDescription())
+        .hotelId(form.getHotelId())
+        .roomId(form.getRoomId())
+        .flagMain(form.getFlagMain().isEmpty() ? null : Boolean.valueOf(form.getFlagMain()))
+        .description(form.getDescription())
         .build();
   }
 }

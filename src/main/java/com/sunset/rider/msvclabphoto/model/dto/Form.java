@@ -16,7 +16,7 @@ public class Form {
 
     private String roomId;
 
-    private boolean flagMain;
+    private String flagMain;
 
     private String description;
     // ...

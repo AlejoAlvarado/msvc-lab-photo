@@ -53,11 +53,6 @@ public class PhotoServiceImpl implements PhotoService {
   }
 
   @Override
-  public Mono<Photo> update(Photo photo) {
-    return photoRepository.save(photo);
-  }
-
-  @Override
   public Mono<Void> delete(String id) {
     return photoRepository.deleteById(id);
   }
