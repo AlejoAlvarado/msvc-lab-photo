@@ -162,8 +162,8 @@ public class PhotoHandler {
               }
             })
         .switchIfEmpty(
-            ServerResponse.status(HttpStatus.NOT_FOUND)
-                .body(BodyInserters.fromValue(ErrorNotFound.error("Error"))))
+            ServerResponse.status(HttpStatus.BAD_REQUEST)
+                .body(BodyInserters.fromValue(ErrorGeneric.error("File no debe ser nulo"))))
         .next();
   }
 

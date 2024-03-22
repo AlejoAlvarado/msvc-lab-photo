@@ -109,6 +109,6 @@ public class BlobService {
     public void deleteImageWithCaption(String blobFileName){
         BlobAsyncClient blobClient = blobServiceClient.getBlobContainerAsyncClient(containerName)
                 .getBlobAsyncClient(blobFileName);
-        blobClient.deleteIfExistsWithResponse(DeleteSnapshotsOptionType.INCLUDE, null);
+        blobClient.deleteIfExists();
     }
 }
